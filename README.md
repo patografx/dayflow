@@ -3,7 +3,6 @@
 ## About
 Dayflow is a lightweight Windows app that automatically changes your desktop background based on the time of day.
 
----
 
 ## Features
 - ⏰ Automated Wallpaper Change
@@ -11,13 +10,6 @@ Dayflow is a lightweight Windows app that automatically changes your desktop bac
 - 🧹 Minimal RAM usage
 - 📥 Saves and loads your configurations automatically on startup
 
----
-
-## Screenshot
-
-![Dayflow Screenshot](https://github.com/patografx/dayflow/blob/532fc0cecaf55e8041ca64d896bf3fe6ec37dd40/assets/screenshot.png?raw=true)
-
----
 
 ## Download
 
@@ -27,7 +19,11 @@ No installation needed — just open and start customising your desktop!
 
 You prefer the main.py file? The code is open source!
 
----
+
+## Screenshot
+
+![Dayflow Screenshot](https://github.com/patografx/dayflow/blob/532fc0cecaf55e8041ca64d896bf3fe6ec37dd40/assets/screenshot.png?raw=true)
+
 
 ## How to Use
 1. Add your wallpaper.
@@ -35,7 +31,6 @@ You prefer the main.py file? The code is open source!
 3. Tick to run at startup to ensure seamless functionality.
 4. Close to minimise to the system tray.
 
----
 
 ## License
 [MIT](LICENSE)
