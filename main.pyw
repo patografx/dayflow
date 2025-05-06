@@ -318,6 +318,12 @@ class BackgroundChangerApp(QMainWindow):
         if file_path:
             # Open a dialog to set the time period
             time_dialog = QDialog(self)
+            time_dialog.setWindowTitle("Change Time Period")
+            time_dialog.setFixedSize(300, 200)
+
+            parent_geometry = self.geometry()
+            time_dialog.move(parent_geometry.right(), parent_geometry.top() - 31)
+            
             time_dialog.setWindowTitle("Set Time Period")
             time_dialog.setFixedSize(300, 200)
 
@@ -562,7 +568,6 @@ class BackgroundChangerApp(QMainWindow):
         time_dialog.setWindowTitle("Change Time Period")
         time_dialog.setFixedSize(300, 200)
 
-        # Position the dialog to the right of the parent window, top-aligned
         parent_geometry = self.geometry()
         time_dialog.move(parent_geometry.right(), parent_geometry.top() - 31)
 
@@ -656,8 +661,8 @@ class BackgroundChangerApp(QMainWindow):
     def re_time_scheduler(self, row):
         # Reopen the time scheduler dialog to edit the time for a specific row
         time_dialog = QDialog(self)
-        time_dialog.setWindowTitle("Edit Time")
-        time_dialog.setFixedSize(300, 150)
+        time_dialog.setWindowTitle("Change Time Period")
+        time_dialog.setFixedSize(300, 200)
 
         parent_geometry = self.geometry()
         time_dialog.move(parent_geometry.right(), parent_geometry.top() - 31)
