@@ -32,8 +32,8 @@ You prefer the main.py file? The code is open source!
 ## How to Use
 1. Add your wallpaper.
 2. Set the start time for each wallpaper.
-3. Tick to run a startup to ensure seamless functionality.
-4. Close to minimise to the system tray — and enjoy a new background throughout your day!
+3. Tick to run at startup to ensure seamless functionality.
+4. Close to minimise to the system tray.
 
 ---
 
