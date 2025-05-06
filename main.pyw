@@ -151,7 +151,7 @@ class BackgroundChangerApp(QMainWindow):
         # Table for displaying images and time slots
         self.table = QTableWidget(0, 4)  # Four columns now
         self.table.setHorizontalHeaderLabels(
-            ["Wallpaper", "File Name", "Time Slot", ""]
+            ["Wallpaper", "File Name", "Start Time", ""]
         )
         self.table.horizontalHeader().setStretchLastSection(
             False
@@ -311,196 +311,36 @@ class BackgroundChangerApp(QMainWindow):
             json.dump(data, file, indent=4)
 
     def add_image(self):
-        # Add a new image with a time period to the table."""
+        # Add a new image with a start time to the table
         file_path, _ = QFileDialog.getOpenFileName(
             self, "Select Wallpaper", "", "Images (*.png *.jpg *.jpeg *.bmp)"
         )
         if file_path:
-            # Open a dialog to set the time period
-            time_dialog = QDialog(self)
-            time_dialog.setWindowTitle("Change Time Period")
-            time_dialog.setFixedSize(300, 200)
+            # Temporarily add the image with a placeholder start time
+            current_time = datetime.now().strftime("%H:%M")  # Get the current time
+            self.images.append((file_path, current_time))  # Use current time as default start time
+            row = len(self.images) - 1  # Get the index of the newly added image
 
-            parent_geometry = self.geometry()
-            time_dialog.move(parent_geometry.right(), parent_geometry.top() - 31)
-            
-            time_dialog.setWindowTitle("Set Time Period")
-            time_dialog.setFixedSize(300, 200)
+            # Use the existing change_time function to set the start time
+            self.change_time(row)
 
-            layout = QVBoxLayout()
-            label = QLabel("Set start and end times (HH:MM):")
-            layout.addWidget(label)
-
-            # Start time input
-            start_time_input = QLineEdit(
-                datetime.now().strftime("%H:%M")
-            )  # Default to current time
-            start_time_input.setMaxLength(5)
-            start_time_input.setAlignment(Qt.AlignCenter)
-            start_time_input.setStyleSheet(
-                """
-                QLineEdit {
-                    color: white;
-                    background-color: #444;
-                    border: 1px solid #555;
-                    padding: 5px;
-                    font-size: 16px;
-                    text-align: center;
-                }
-            """
-            )
-            layout.addWidget(QLabel("Start Time:"))
-            layout.addWidget(start_time_input)
-
-            # End time input
-            end_time_input = QLineEdit("23:59")  # Default to the end of the day
-            end_time_input.setMaxLength(5)
-            end_time_input.setAlignment(Qt.AlignCenter)
-            end_time_input.setStyleSheet(
-                """
-                QLineEdit {
-                    color: white;
-                    background-color: #444;
-                    border: 1px solid #555;
-                    padding: 5px;
-                    font-size: 16px;
-                    text-align: center;
-                }
-            """
-            )
-            layout.addWidget(QLabel("End Time:"))
-            layout.addWidget(end_time_input)
-
-            # Enforce "HH:MM" format and editing rules
-            def enforce_time_format(input_field):
-                # Ensure the time input follows the HH:MM format."""
-                text = input_field.text()
-                if len(text) != 5 or text[2] != ":":
-                    input_field.setText(
-                        datetime.now().strftime("%H:%M")
-                    )  # Reset to default if invalid
-                    return
-
-                hh, mm = text.split(":")
-                if not (hh.isdigit() and mm.isdigit()):
-                    input_field.setText(
-                        datetime.now().strftime("%H:%M")
-                    )  # Reset if invalid
-
-            def handle_keypress(event, input_field):
-                # Handle keypress events for time input."""
-                cursor_pos = input_field.cursorPosition()
-                text = input_field.text()
-
-                if event.key() in (Qt.Key_Left, Qt.Key_Right):  # Arrow key navigation
-                    if event.key() == Qt.Key_Left:
-                        if cursor_pos > 0:
-                            # Prevent skipping the second digit of hours when moving left
-                            input_field.setCursorPosition(
-                                cursor_pos - 1 if cursor_pos != 3 else 2
-                            )
-                    elif event.key() == Qt.Key_Right:
-                        if cursor_pos < 5:
-                            input_field.setCursorPosition(
-                                cursor_pos + 1 if cursor_pos != 2 else 4
-                            )
-                    return
-
-                if event.key() == Qt.Key_Backspace:  # Allow deleting numbers
-                    if cursor_pos > 0 and cursor_pos != 3:  # Prevent deleting the colon
-                        new_cursor_pos = cursor_pos - 1
-                        text = text[:new_cursor_pos] + "0" + text[new_cursor_pos + 1 :]
-                        input_field.setText(text)
-                        input_field.setCursorPosition(new_cursor_pos)
-                    return
-
-                if event.text().isdigit():  # Allow typing numbers
-                    if cursor_pos < 2:  # Editing hours
-                        text = text[:cursor_pos] + event.text() + text[cursor_pos + 1 :]
-                        input_field.setText(text)
-                        input_field.setCursorPosition(
-                            min(cursor_pos + 1, 2)
-                        )  # Move cursor forward
-                        if cursor_pos == 1:  # Jump to minutes after 2 digits
-                            input_field.setCursorPosition(3)
-                    elif cursor_pos > 2 and cursor_pos < 5:  # Editing minutes
-                        text = text[:cursor_pos] + event.text() + text[cursor_pos + 1 :]
-                        input_field.setText(text)
-                        input_field.setCursorPosition(
-                            min(cursor_pos + 1, 5)
-                        )  # Move cursor forward
-
-            # Connect the validation and keypress handling to both inputs
-            start_time_input.textChanged.connect(
-                lambda: enforce_time_format(start_time_input)
-            )
-            start_time_input.keyPressEvent = lambda event: handle_keypress(
-                event, start_time_input
-            )
-
-            end_time_input.textChanged.connect(
-                lambda: enforce_time_format(end_time_input)
-            )
-            end_time_input.keyPressEvent = lambda event: handle_keypress(
-                event, end_time_input
-            )
-
-            save_button = QPushButton("Save")
-            layout.addWidget(save_button)
-
-            time_dialog.setLayout(layout)
-
-            def save_time_period():
-                # Save the entered time period and add the image."""
-                start_time = start_time_input.text()
-                end_time = end_time_input.text()
-
-                # Validate the time format
-                def is_valid_time_format(time_str):
-                    try:
-                        datetime.strptime(time_str, "%H:%M")
-                        return True
-                    except ValueError:
-                        return False
-
-                if not (
-                    is_valid_time_format(start_time) and is_valid_time_format(end_time)
-                ):
-                    label.setText("Invalid time format. Use HH:MM.")
-                    return
-
-                # Check if the start time is earlier than the end time
-                if start_time >= end_time:
-                    label.setText("Start time must be earlier than end time.")
-                    return
-
-                # Check for overlapping time slots
-                for _, existing_start, existing_end in self.images:
-                    if not (end_time <= existing_start or start_time >= existing_end):
-                        label.setText("Time slot overlaps with an existing wallpaper.")
-                        return
-
-                # Add the image and time period to the list
-                self.images.append((file_path, start_time, end_time))
-                self.update_table()
-                self.save_data()  # Save data after adding an image
-                time_dialog.accept()  # Close the dialog
-
-            # Connect the Save button to the save_time_period function
-            save_button.clicked.connect(save_time_period)
-
-            # Show the dialog
-            time_dialog.exec_()
+            # Update the table and save the data
+            self.update_table()
+            self.save_data()
 
     def update_table(self):
-        """Update the table with the current images and time periods."""
+        """Update the table with the current images and dynamically calculated time periods."""
         try:
             # Sort the images list by start time (ascending order)
             self.images.sort(key=lambda x: x[1])  # Sort by the second element (start_time)
 
             self.table.setRowCount(len(self.images))
 
-            for row, (image_path, start_time, end_time) in enumerate(self.images):
+            for row, (image_path, start_time) in enumerate(self.images):
+                # Calculate the end time dynamically
+                next_row = (row + 1) % len(self.images)  # Wrap around to the first wallpaper
+                end_time = self.images[next_row][1]
+
                 # Thumbnail widget with hover and click functionality
                 thumbnail_label = ClickableLabel(
                     row=row,
@@ -519,13 +359,13 @@ class BackgroundChangerApp(QMainWindow):
                 wallpaper_item.setFlags(Qt.ItemIsEnabled)
                 self.table.setItem(row, 1, wallpaper_item)
 
-                # Time slot widget with hover and click functionality
+                # Time slot column
                 time_slot_label = ClickableLabel(
                     row=row,
                     on_click=lambda r=row: self.change_time(r),
                     is_thumbnail=False,  # Mark as a time slot
                 )
-                time_slot_label.setText(f"{start_time} - {end_time}")
+                time_slot_label.setText(f"{start_time}")  # Display only the start time
                 time_slot_label.setAlignment(Qt.AlignCenter)
                 time_slot_label.setCursor(Qt.PointingHandCursor)
                 self.table.setCellWidget(row, 2, time_slot_label)
@@ -552,130 +392,31 @@ class BackgroundChangerApp(QMainWindow):
             print(f"Error in update_table: {e}")
 
     def change_image(self, row):
-        # Change the image for a specific row."""
+        # Change the image for a specific row
         file_path, _ = QFileDialog.getOpenFileName(
             self, "Select New Wallpaper", "", "Images (*.png *.jpg *.jpeg *.bmp)"
         )
         if file_path:
-            # Update the image path while keeping the start and end times intact
-            self.images[row] = (file_path, self.images[row][1], self.images[row][2])
+            # Update the image path while keeping the start time intact
+            self.images[row] = (file_path, self.images[row][1])  # Only two elements now
             self.update_table()
             self.save_data()  # Save the updated data
 
     def change_time(self, row):
-        # Change the time for a specific row
+        # Open the time scheduler dialog to edit the start time for a specific row
         time_dialog = QDialog(self)
-        time_dialog.setWindowTitle("Change Time Period")
-        time_dialog.setFixedSize(300, 200)
+        time_dialog.setWindowTitle("Edit Start Time")
+        time_dialog.setFixedSize(300, 150)
 
         parent_geometry = self.geometry()
         time_dialog.move(parent_geometry.right(), parent_geometry.top() - 31)
 
         layout = QVBoxLayout()
-        label = QLabel("Set start and end times (HH:MM):")
+        label = QLabel("Edit start time (HH:MM):")
         layout.addWidget(label)
 
-        # Start time input
-        start_time_input = QLineEdit(self.images[row][1])  # Pre-fill with the current start time
-        start_time_input.setMaxLength(5)
-        start_time_input.setAlignment(Qt.AlignCenter)
-        start_time_input.setStyleSheet(
-            """
-            QLineEdit {
-                color: white;
-                background-color: #444;
-                border: 1px solid #555;
-                padding: 5px;
-                font-size: 16px;
-                text-align: center;
-            }
-            """
-        )
-        layout.addWidget(QLabel("Start Time:"))
-        layout.addWidget(start_time_input)
-
-        # End time input
-        end_time_input = QLineEdit(self.images[row][2])  # Pre-fill with the current end time
-        end_time_input.setMaxLength(5)
-        end_time_input.setAlignment(Qt.AlignCenter)
-        end_time_input.setStyleSheet(
-            """
-            QLineEdit {
-                color: white;
-                background-color: #444;
-                border: 1px solid #555;
-                padding: 5px;
-                font-size: 16px;
-                text-align: center;
-            }
-            """
-        )
-        layout.addWidget(QLabel("End Time:"))
-        layout.addWidget(end_time_input)
-
-        save_button = QPushButton("Save")
-        layout.addWidget(save_button)
-
-        time_dialog.setLayout(layout)
-
-        def save_time_period():
-            # Save the entered time period and update the row
-            start_time = start_time_input.text()
-            end_time = end_time_input.text()
- 
-            # Validate the time format
-            def is_valid_time_format(time_str):
-                try:
-                    datetime.strptime(time_str, "%H:%M")
-                    return True
-                except ValueError:
-                    return False
-
-            if not (is_valid_time_format(start_time) and is_valid_time_format(end_time)):
-                label.setText("Invalid time format. Use HH:MM.")
-                return
-
-            # Check if the start time is earlier than the end time
-            if start_time >= end_time:
-                label.setText("Start time must be earlier than end time.")
-                return
-
-            # Check for overlapping time slots
-            for i, (_, existing_start, existing_end) in enumerate(self.images):
-                if i != row and not (end_time <= existing_start or start_time >= existing_end):
-                    label.setText("Time slot overlaps with an existing wallpaper.")
-                    return
-
-            # Update the time period for the current row
-            self.images[row] = (self.images[row][0], start_time, end_time)
-            self.update_table()
-            self.save_data()  # Save data after updating the time
-            time_dialog.accept()  # Close the dialog
-
-        # Connect the Save button to the save_time_period function
-        save_button.clicked.connect(save_time_period)
-
-        # Show the dialog
-        time_dialog.exec_()
-
-    def re_time_scheduler(self, row):
-        # Reopen the time scheduler dialog to edit the time for a specific row
-        time_dialog = QDialog(self)
-        time_dialog.setWindowTitle("Change Time Period")
-        time_dialog.setFixedSize(300, 200)
-
-        parent_geometry = self.geometry()
-        time_dialog.move(parent_geometry.right(), parent_geometry.top() - 31)
-
-        layout = QVBoxLayout()
-        label = QLabel("Edit time (HH:MM):")
-        layout.addWidget(label)
-
-        # Time input field
-        time_input = QLineEdit(
-            self.images[row][1]
-        )  # Pre-fill with the current time slot
-        time_input.setMaxLength(5)  # Enforce "HH:MM" format
+        time_input = QLineEdit(self.images[row][1])  # Pre-fill with the current start time
+        time_input.setMaxLength(5)
         time_input.setAlignment(Qt.AlignCenter)
         time_input.setStyleSheet(
             """
@@ -687,53 +428,51 @@ class BackgroundChangerApp(QMainWindow):
                 font-size: 16px;
                 text-align: center;
             }
-        """
+            """
         )
         layout.addWidget(time_input)
 
-        # Enforce "HH:MM" format
         def enforce_time_format():
-            # Ensure the time input follows the HH:MM format
             text = time_input.text()
             if len(text) != 5 or text[2] != ":":
-                time_input.setText(
-                    self.images[row][1]
-                )  # Reset to current time if invalid
+                time_input.setText(self.images[row][1])
                 return
-
             hh, mm = text.split(":")
             if not (hh.isdigit() and mm.isdigit()):
-                time_input.setText(self.images[row][1])  # Reset if invalid
+                time_input.setText(self.images[row][1])
 
         time_input.textChanged.connect(enforce_time_format)
         time_input.keyPressEvent = lambda event: self.handle_keypress(event, time_input)
-        time_input.mousePressEvent = lambda event: self.highlight_section(time_input)
 
         save_button = QPushButton("Save")
         layout.addWidget(save_button)
 
         time_dialog.setLayout(layout)
 
+        # Save the time only when the "Save" button is clicked
         def save_time():
-            # Get the entered time
             selected_time = time_input.text()
 
-            # Check if the time slot is already in use (excluding the current row)
             if any(
                 time_slot == selected_time
                 for i, (_, time_slot) in enumerate(self.images)
                 if i != row
             ):
-                label.setText("Time slot already in use. Choose another.")
+                label.setText("Start time already in use. Choose another.")
                 return
 
             # Update the time slot for the current row
             self.images[row] = (self.images[row][0], selected_time)
             self.update_table()
-            time_dialog.accept()
+            self.save_data()
+            time_dialog.accept()  # Close the dialog
 
         save_button.clicked.connect(save_time)
-        time_dialog.exec_()
+
+        # Execute the dialog (blocking)
+        if time_dialog.exec_() != QDialog.Accepted:
+            # If the dialog is rejected (e.g., "X" is clicked), remove the placeholder entry
+            self.images.pop(row)
 
     def handle_keypress(self, event, time_input):
         # Handle keypress events for time input
@@ -807,11 +546,15 @@ class BackgroundChangerApp(QMainWindow):
     def check_wallpaper_change(self):
         """Check if it's time to change the wallpaper."""
         now = datetime.now().strftime("%H:%M")
-        for image_path, start_time, end_time in self.images:
-            if (
-                start_time <= now <= end_time
-            ):  # Check if the current time is within the period
+        for i, (image_path, start_time) in enumerate(self.images):
+            # Calculate the end time dynamically
+            next_index = (i + 1) % len(self.images)  # Wrap around to the first wallpaper
+            end_time = self.images[next_index][1]
+
+            # Check if the current time is within the period
+            if start_time <= now < end_time or (start_time > end_time and (now >= start_time or now < end_time)):
                 set_wallpaper(image_path)
+                break
 
     def get_dark_theme(self):
         # Return a dark theme stylesheet
