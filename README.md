@@ -1,8 +1,7 @@
 # Dayflow
 
 ## About
-Dayflow is a lightweight Windows app that automatically changes your desktop background based on the time of day.  
-Organise your favourite wallpapers with custom time settings to create a personalised desktop experience — effortlessly.
+Dayflow is a lightweight Windows app that automatically changes your desktop background based on the time of day. Organise your favourite wallpapers with custom time settings to create a personalised desktop experience — effortlessly.
 
 ---
 
