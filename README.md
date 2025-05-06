@@ -21,7 +21,7 @@ Dayflow is a lightweight Windows app that automatically changes your desktop bac
 
 ## Download (File currently 10mb too big for GitHub)
 
-👉 [**Download Dayflow**](https://raw.githubusercontent.com/patografx/dayflow/main/releases/Dayflow%20(v1.0.0).rar)
+👉 [**Download Dayflow.exe**](https://raw.githubusercontent.com/patografx/dayflow/main/releases/Dayflow%20(v1.0.0).rar)
 
 No installation needed — just open and start customising your desktop!
 
